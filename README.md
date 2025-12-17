@@ -2,6 +2,8 @@
 
 A simple PHP package to generate `.env` files from example templates using system environment variables.
 
+Created by [tofuma](https://github.com/tofuma).
+
 ## What does this package do?
 
 When you deploy an application, you usually have a `.env.example` file with all the environment variable keys your application needs. The problem is: how do you generate the actual `.env` file with the correct values from your server environment?
@@ -117,7 +119,89 @@ services:
       DB_PASSWORD: secret
 ```
 
-### Example 3: Using with Dokploy
+### Example 3: Docker with run.sh script
+
+Many projects use a `run.sh` script to start the application inside a Docker container. This is a common pattern for applications that need to do some setup before starting.
+
+In your `run.sh`:
+
+```bash
+#!/bin/bash
+set -e
+
+# Generate .env file from container environment variables
+vendor/bin/env-exporter .env.example .env
+
+# Run database migrations (optional)
+php artisan migrate --force
+
+# Clear and cache configurations (optional)
+php artisan config:cache
+php artisan route:cache
+
+# Start the application
+exec php-fpm
+```
+
+In your `Dockerfile`:
+
+```dockerfile
+FROM php:8.2-fpm
+
+WORKDIR /var/www/html
+
+# Install dependencies
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts
+
+# Copy application code
+COPY . .
+
+# Make run.sh executable
+RUN chmod +x run.sh
+
+# Use run.sh as the entrypoint
+CMD ["./run.sh"]
+```
+
+In your `docker-compose.yml`:
+
+```yaml
+services:
+  app:
+    build: .
+    environment:
+      APP_NAME: "My Application"
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: base64:your-app-key-here
+      APP_URL: https://myapp.com
+      
+      DB_CONNECTION: mysql
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_DATABASE: myapp
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+      
+      CACHE_DRIVER: redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - database
+      - redis
+
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: myapp
+      MYSQL_ROOT_PASSWORD: secret
+
+  redis:
+    image: redis:alpine
+```
+
+### Example 4: Using with Dokploy
 
 [Dokploy](https://dokploy.com) is a deployment platform that allows you to set environment variables through its web interface. When you add environment variables in Dokploy, they become available as system environment variables in your container.
 
@@ -163,15 +247,36 @@ REDIS_HOST=
 REDIS_PORT=
 ```
 
-**Step 3**: In your deployment script or Dockerfile entrypoint, run:
+**Step 3**: Create a `run.sh` script in your project root:
 
 ```bash
+#!/bin/bash
+set -e
+
+# Generate .env file from Dokploy environment variables
 vendor/bin/env-exporter .env.example .env
+
+# Start your application
+exec php-fpm
+```
+
+**Step 4**: In your Dockerfile, use the `run.sh` script:
+
+```dockerfile
+FROM php:8.2-fpm
+
+WORKDIR /var/www/html
+
+COPY . .
+RUN composer install --no-dev
+RUN chmod +x run.sh
+
+CMD ["./run.sh"]
 ```
 
 The package will create a `.env` file with only the variables defined in `.env.example`, using the values from Dokploy environment settings.
 
-### Example 4: Kubernetes deployment
+### Example 5: Kubernetes deployment
 
 In your Kubernetes deployment manifest:
 
@@ -193,15 +298,17 @@ spec:
                 name: myapp-config
 ```
 
-In your container entrypoint:
+In your container `run.sh`:
 
 ```bash
 #!/bin/bash
+set -e
+
 vendor/bin/env-exporter .env.example .env
-php-fpm
+exec php-fpm
 ```
 
-### Example 5: GitHub Actions deployment
+### Example 6: GitHub Actions deployment
 
 ```yaml
 name: Deploy
@@ -233,7 +340,7 @@ jobs:
         run: ./deploy.sh
 ```
 
-### Example 6: Laravel Forge / Envoyer
+### Example 7: Laravel Forge / Envoyer
 
 In your deployment script:
 
@@ -285,3 +392,7 @@ export APP_NAME=Laravel
 ## License
 
 MIT License. See [LICENSE](LICENSE) for more information.
+
+## Author
+
+Created and maintained by [tofuma](https://github.com/tofuma).
