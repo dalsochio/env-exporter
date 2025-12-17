@@ -1,0 +1,75 @@
+#!/usr/bin/env php
+<?php
+
+// Autoload
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+];
+
+$autoloaded = false;
+foreach ($autoloadPaths as $path) {
+    if (file_exists($path)) {
+        require $path;
+        $autoloaded = true;
+        break;
+    }
+}
+
+if (!$autoloaded) {
+    fwrite(STDERR, "Error: Could not find autoload.php\n");
+    exit(1);
+}
+
+use Dalsochio\EnvExporter\EnvExporter;
+
+// Help
+function printUsage(): void
+{
+    $script = $_SERVER['argv'][0] ?? 'env-exporter';
+    $usage = <<<USAGE
+
+Usage:
+  {$script} <example-file> <output-file>
+
+Description:
+  Reads keys from the example .env file and writes a new .env containing
+  only the keys that are currently set in the system environment.
+
+Arguments:
+  example-file    Path to example env file (e.g., .env.example)
+  output-file     Path to write generated .env
+
+Example:
+  {$script} .env.example .env
+
+
+USAGE;
+    fwrite(STDERR, $usage);
+}
+
+// Validate args
+$argv = $_SERVER['argv'] ?? [];
+
+if (count($argv) < 3) {
+    printUsage();
+    exit(1);
+}
+
+if (in_array($argv[1], ['-h', '--help', 'help'])) {
+    printUsage();
+    exit(0);
+}
+
+$examplePath = $argv[1];
+$outputPath = $argv[2];
+
+try {
+    $count = EnvExporter::generateAndReport($examplePath, $outputPath);
+    $word = $count === 1 ? 'entry' : 'entries';
+    fwrite(STDOUT, "Generated .env with {$count} {$word}: {$outputPath}\n");
+    exit(0);
+} catch (\RuntimeException $e) {
+    fwrite(STDERR, "Error: " . $e->getMessage() . "\n");
+    exit(2);
+}

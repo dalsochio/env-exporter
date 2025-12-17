@@ -1,0 +1,29 @@
+{
+    "name": "dalsochio/env-exporter",
+    "description": "Generate .env files from example templates using system environment variables",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dalsochio"
+        }
+    ],
+    "require": {
+        "php": ">=7.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dalsochio\\EnvExporter\\": "src/"
+        }
+    },
+    "bin": [
+        "bin/env-exporter"
+    ],
+    "keywords": [
+        "env",
+        "dotenv",
+        "environment",
+        "generator",
+        "cli"
+    ]
+}
