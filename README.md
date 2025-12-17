@@ -2,8 +2,6 @@
 
 A simple PHP package to generate `.env` files from example templates using system environment variables.
 
-Created by [tofuma](https://github.com/tofuma).
-
 ## What does this package do?
 
 When you deploy an application, you usually have a `.env.example` file with all the environment variable keys your application needs. The problem is: how do you generate the actual `.env` file with the correct values from your server environment?
