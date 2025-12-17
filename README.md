@@ -16,6 +16,40 @@ This package solves that problem. It reads the keys from your `.env.example` fil
 - **Automation**: No manual copy-paste of environment variables during deployment
 - **Consistency**: Ensures your `.env` file always matches your `.env.example` structure
 
+## Requirements
+
+- PHP 7.1 or higher
+
+## How it works
+
+1. The package reads your `.env.example` file
+2. It extracts all the variable keys (for example: `APP_NAME`, `DB_HOST`, `REDIS_URL`)
+3. For each key, it checks if that variable exists in the system environment
+4. If the variable exists, it adds the key and value to the output
+5. It writes the result to your `.env` file
+
+### Supported formats in .env.example
+
+The package understands these formats:
+
+```bash
+# Simple key=value
+APP_NAME=Laravel
+
+# Empty value
+APP_ENV=
+
+# Quoted values
+APP_NAME="My App"
+
+# With export prefix
+export APP_NAME=Laravel
+
+# Comments are ignored
+# This is a comment
+; This is also a comment
+```
+
 ## Installation
 
 ```bash
@@ -354,40 +388,6 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
-
-## How it works
-
-1. The package reads your `.env.example` file
-2. It extracts all the variable keys (for example: `APP_NAME`, `DB_HOST`, `REDIS_URL`)
-3. For each key, it checks if that variable exists in the system environment
-4. If the variable exists, it adds the key and value to the output
-5. It writes the result to your `.env` file
-
-### Supported formats in .env.example
-
-The package understands these formats:
-
-```bash
-# Simple key=value
-APP_NAME=Laravel
-
-# Empty value
-APP_ENV=
-
-# Quoted values
-APP_NAME="My App"
-
-# With export prefix
-export APP_NAME=Laravel
-
-# Comments are ignored
-# This is a comment
-; This is also a comment
-```
-
-## Requirements
-
-- PHP 7.1 or higher
 
 ## License
 
